@@ -1,7 +1,7 @@
 
-__author__ = "Sean Gibbons and Chris Smillie"
+__author__ = "Sean Gibbons"
 __copyright__ = "Copyright 2016"
-__credits__ = ["Sean Gibbons; Chris Smillie; Eric Alm; Sean Kearny"]
+__credits__ = ["Sean Gibbons; Chris Smillie; Sean Kearny; Eric Alm"]
 __license__ = "GPL"
 __version__ = "1.0.0-dev"
 __maintainer__ = "Sean Gibbons"
