@@ -17,7 +17,7 @@ import argparse
 from pykalman import KalmanFilter
 import math
 
-###imput arguments
+### arguments
 parser = argparse.ArgumentParser()
 parser.add_argument('-i', help='input file (rows = samples, columns = OTUs)', required=True)
 parser.add_argument('-t', help='input data type', default='counts', choices=['counts', 'norm', 'log'])
@@ -27,9 +27,9 @@ parser.add_argument('-d', help='field delimiter', default='\t')
 parser.add_argument('-o', help='output prefix ', default='out')
 args = parser.parse_args()
 
-# read data - make sure sample names are converted to Pandas-interpretable datatime format (e.g. YYYY-MM-DD)
+### read data - make sure sample names are converted to Pandas-interpretable datatime format (e.g. YYYY-MM-DD)
 x = pd.DataFrame.from_csv(args.i, sep=args.d, header=0, index_col=0, infer_datetime_format=True)
-# uncomment transpose if OTUs are rows and samples are columns
+### uncomment transpose if OTUs are rows and samples are columns
 #x = x.transpose()
 
 if args.t == 'counts':
@@ -38,7 +38,7 @@ if args.t == 'log':
     x = np.exp(x)
 nrowx, ncolx = np.shape(x)
 
-# check data
+### check data
 if nrowx == 0 or ncolx == 0:
     quit('error: input file format (check delimiter)')
 if x.min().min() < 0 or x.max().max() > 1:
@@ -46,7 +46,7 @@ if x.min().min() < 0 or x.max().max() > 1:
 
 print "Data successfully loaded."
 
-# correct for compositional effect by dividing each sample by its effective number of species
+### correct for compositional effect by dividing each sample by its effective number of species
 
 x_shannon = sp.entropy(x.transpose())
 x_esc = []
@@ -60,7 +60,7 @@ x_ec = x.multiply(1.0/x_esc.iloc[:,0],axis=0)
 
 print "Entropy correction for compositional effects complete." 
 
-# fill missing dates with 'nan' (assumes daily sampling - see Pandas documentation for other time incriments)
+### fill missing dates with 'nan' (assumes daily sampling - see Pandas documentation for other time incriments)
 x_ec_nans = x_ec.resample('D')
 
 print "Gaps in time series filled with NaNs."
@@ -71,10 +71,10 @@ x_ec_nans_masked = np.ma.masked_invalid(np.array(x_ec_nans))
 # initialize dataframe for kalman-filtered data
 x_ec_int_kf = pd.DataFrame(np.zeros((x_ec_nans_masked.shape[0],x_ec_nans_masked.shape[1])),index=x_ec_nans.index,columns=x_ec_nans.columns)
 
-# initialize kalman filter function for 1-D time series
+### initialize kalman filter function for 1-D time series
 kf = KalmanFilter(n_dim_obs=1)
 
-# run kalman filter - estimate parameters for each OTU (5 iterations)
+### run kalman filter - estimate parameters for each OTU (5 iterations)
 for i in range(x_ec_nans_masked.shape[1]):
     (filtered_state_means, filtered_state_covariances) = kf.em(x_ec_nans_masked[:,i], n_iter=5).filter(x_ec_nans_masked[:,i])
     for x in range(x_ec_nans_masked.shape[0]):
@@ -83,16 +83,16 @@ for i in range(x_ec_nans_masked.shape[1]):
 print "Kalman filtering and interpolation successful."
 
 
-#log-transform kalman filtered data
+###log-transform kalman filtered data
 x_ec_int_kf_log = x_ec_int_kf.apply(np.log)
 
 print "Log transform successful."
 
 
-#initialize dataframe for first-differenced data
+###initialize dataframe for first-differenced data
 x_ec_int_kf_log_delta = x_ec_int_kf_log.iloc[:-1,:]
 
-#calculate delta
+###calculate delta
 for i in range(x_ec_int_kf_log.shape[1]):
     log_delta_list = []
     for x in range(x_ec_int_kf_log.shape[0] - 1):
