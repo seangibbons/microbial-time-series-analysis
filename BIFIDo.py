@@ -45,7 +45,7 @@ if x.min().min() < 0 or x.max().max() > 1:
 
 print "Data successfully loaded!"
 
-# fill missing dates with 'nan'
+# fill missing dates with 'nan' (assumes daily sampling - see Pandas documentation for other time incriments)
 x_nans = x.resample('D')
 
 print "Gaps in time series filled with NaNs!"
@@ -53,22 +53,22 @@ print "Gaps in time series filled with NaNs!"
 # use numpy mask for nans - required for pykalman
 x_nans_masked = np.ma.masked_invalid(np.array(x_nans))
 
-# initialize dataframe for kalman-smoothed data
+# initialize dataframe for kalman-filtered data
 x_int_ks = pd.DataFrame(np.zeros((x_nans_masked.shape[0],x_nans_masked.shape[1])),index=x_nans.index,columns=x_nans.columns)
 
 # initialize kalman filter function for 1-D time series
 kf = KalmanFilter(n_dim_obs=1)
 
-# run kalman smoother - estimate parameters for each OTU (5 iterations)
+# run kalman filter - estimate parameters for each OTU (5 iterations)
 for i in range(x_nans_masked.shape[1]):
-    (filtered_state_means, filtered_state_covariances) = kf.em(x_nans_masked[:,i], n_iter=5).smooth(x_nans_masked[:,i])
+    (filtered_state_means, filtered_state_covariances) = kf.em(x_nans_masked[:,i], n_iter=5).filter(x_nans_masked[:,i])
     for x in range(x_nans_masked.shape[0]):
         x_int_ks.iloc[x,i] = np.array(filtered_state_means).flatten()[x]
 
-print "Kalman smoothing and interpolation successful!"
+print "Kalman filtering and interpolation successful!"
 
 
-#log-transform kalman smoothed data
+#log-transform kalman filtered data
 x_int_ks_log = x_int_ks.apply(np.log)
 
 print "Log transform successful!"
