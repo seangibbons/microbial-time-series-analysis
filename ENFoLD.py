@@ -51,7 +51,9 @@ print "Data successfully loaded."
 x_shannon = sp.entropy(x.transpose())
 x_esc = []
 for i in range(len(x_shannon)):
-    x_esc.append(math.exp(x_shannon[i])) 
+#    x_esc.append(math.exp(x_shannon[i])) 
+    x_esc.append(x_shannon[i])
+
 x_esc = pd.DataFrame(x_esc)
 x_esc['index'] = x.index
 x_esc = x_esc.set_index('index')
